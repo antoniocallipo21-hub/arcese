@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel';
 
 // Cambia con il dominio definitivo
 const site = 'https://arcesequarterhorses.com';
@@ -7,6 +8,12 @@ const site = 'https://arcesequarterhorses.com';
 // Vecchi URL WordPress -> nuovi (mantiene SEO e link esterni)
 export default defineConfig({
   site,
+  output: 'static',
+  adapter: vercel({
+    webAnalytics: {
+      enabled: true,
+    },
+  }),
   trailingSlash: 'always',
   redirects: {
     '/americasnextgunmodel-joins-elite-company-as-nrha-million-dollar-dam/': '/news/americasnextgunmodel-joins-elite-company-as-nrha-million-dollar-dam/',
