@@ -83,6 +83,13 @@ feesYear: "2027"
 fees:
   - { label: ICSI breeding, value: "$3,250" }
 feesNote: Fees are indicative and may vary by period, availability or facility. Please contact the station for contracts and exact costs.
+subscriptions:
+  - Oswood Breeders Incentive
+  - Oswood Stallion Advantage
+  - 100X Stakes
+  - NRHA Sire & Dam
+  - National Reining Breeders Classic
+  - Northeast Breeders Trust
 standingAt:
   name: Oswood Stallion Station
   address: 1400 Old Garner Road, Weatherford, TX 76088
