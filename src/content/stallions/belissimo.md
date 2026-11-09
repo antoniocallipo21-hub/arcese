@@ -11,6 +11,9 @@ cardPhoto: /images/stallions/belissimo-portrait.jpg
 cardFocus: "40% 40%"
 heroImage: /images/stallions/belissimo/hero.jpg
 heroPosition: "70% 50%"
+heroLogoSide: right
+heroLogoOverlay: /images/stallions/belissimo/logo.png
+heroLogo: /images/stallions/belissimo/logo.png
 heroCard: /images/stallions/belissimo/hero-mobile.jpg
 heroCardPosition: "20% 50%"
 sire: Magnum Chic Dream

@@ -13,11 +13,12 @@ cardPhoto: /images/stallions/july-joe-snap-portrait.jpg
 cardFocus: "45% 40%"
 heroImage: /images/stallions/july-joe-snap/hero.jpg
 heroPosition: "50% 50%"
-heroCard: /images/stallions/july-joe-snap/hero-main.jpg
-heroCardPosition: "30% 55%"
+heroCard: /images/stallions/july-joe-snap/hero.jpg
+heroCardPosition: "12% 50%"
 heroLogoSide: left
 heroLogoTop: 45vh
 heroLogoOverlay: /images/stallions/july-joe-snap/logo.png
+heroLogo: /images/stallions/july-joe-snap/logo.png
 stats:
   - { value: "$271,294+", label: "NRHA Lifetime Earnings" }
   - { value: "2023", label: "NRHA European Futurity Champion" }

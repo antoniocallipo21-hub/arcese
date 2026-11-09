@@ -26,7 +26,7 @@ const intro = rawIntro?.trim().replace(/[.。]+$/, '');
         {Astro.slots.has('default') && <div class="fhero__cta"><slot /></div>}
       </div>
     </div>
- {logoOverlay && <div class:list={['container fhero__ov', { right: logoSide === 'right' }]} style={logoTop ? `--ovtop:${logoTop}` : undefined}><img src={logoOverlay} alt={logoAlt} /></div>}
+ {logoOverlay && <div class:list={['container fhero__ov', { right: logoSide === 'right', 'mob-off': !!logoMobile }]} style={logoTop ? `--ovtop:${logoTop}` : undefined}><img src={logoOverlay} alt={logoAlt} /></div>}
  {logoMobile && <img class="fhero__logo" src={logoMobile} alt={logoAlt} />}
     <button class="cue" type="button" aria-label="Scroll down"><span></span></button>
   </section>
@@ -50,8 +50,9 @@ const intro = rawIntro?.trim().replace(/[.。]+$/, '');
   .fhero__ov.right img { margin-left: auto; }
   .fhero__ov img { display: block; width: clamp(150px, 17vw, 270px); height: auto; filter: drop-shadow(0 4px 16px rgba(0,0,0,.35)); }
   @media (max-width: 700px) { .fhero__ov { top: 92px; --ovtop: 92px; } .fhero__ov img { margin-left: auto; width: 140px; } }
+  @media (max-width: 700px) { .fhero__ov.mob-off { display: none; } }
   .fhero__logo { display: none; }
-  @media (max-width: 700px) { .fhero__logo { display: block; position: absolute; z-index: 2; left: 16px; top: calc(100lvh - 250px); width: min(58vw, 240px); height: auto; filter: drop-shadow(0 4px 14px rgba(0,0,0,.45)); } }
+  @media (max-width: 700px) { .fhero__logo { display: block; position: absolute; z-index: 2; left: 16px; bottom: calc(clamp(96px, 16vh, 150px) + 78px); width: auto; height: auto; max-width: min(58vw, 240px); max-height: 120px; filter: drop-shadow(0 4px 14px rgba(0,0,0,.45)); } }
   @media (max-width: 700px) { .fhero picture img { object-position: var(--pm, var(--pd, center)) !important; } }
   .fhero picture img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
   .fhero::before { content: ''; position: absolute; inset: 0; z-index: 1;
