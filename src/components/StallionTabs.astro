@@ -1,0 +1,21 @@
+---
+interface Props { slug: string; active: 'info' | 'show' | 'sire'; hasShow: boolean; hasSire: boolean }
+const { slug, active, hasShow, hasSire } = Astro.props;
+const base = `/stallions/${slug}/`;
+const tabs = [
+  { key: 'info', label: 'Breeding Info', href: base, show: true },
+  { key: 'show', label: 'Show Record', href: `${base}show-record/`, show: hasShow },
+  { key: 'sire', label: 'Sire Record', href: `${base}sire-record/`, show: hasSire },
+].filter((t) => t.show);
+---
+{tabs.length > 1 && (
+  <nav class="tabs" aria-label="Stallion sections">
+    {tabs.map((t) => <a href={t.href} class:list={{ on: t.key === active }}>{t.label}</a>)}
+  </nav>
+)}
+<style>
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px; }
+  .tabs a { padding: 8px 18px; border: 2px solid var(--black); text-decoration: none; font-family: var(--font-display); text-transform: uppercase; letter-spacing: .1em; font-weight: 600; color: var(--black); }
+  .tabs a:hover { border-color: var(--red); color: var(--red); }
+  .tabs a.on { background: var(--black); color: #fff; }
+</style>

@@ -1,0 +1,335 @@
+---
+import Base from '../../../layouts/Base.astro';
+import MediaSection from '../../../components/MediaSection.astro';
+import PageHero from '../../../components/PageHero.astro';
+import StallionTabs from '../../../components/StallionTabs.astro';
+import { getCollection, render } from 'astro:content';
+import { heroFor } from '../../../lib/heroes';
+
+export async function getStaticPaths() {
+  const all = await getCollection('stallions');
+  return all.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+const { entry } = Astro.props;
+const d = entry.data;
+const { Content } = await render(entry);
+const hero = d.heroImage ?? d.photo ?? (await heroFor('stallions'));
+const leftHas = d.fees.length > 0 || !!d.status || d.semen.length > 0 || d.tests.length > 0 || d.subscriptions.length > 0;
+const inquiry = `/contact/?stallion=${encodeURIComponent(d.name)}`;
+const p = d.passport;
+const passport = p
+  ? ([
+      ['Full name', p.fullName], ['Breed', p.breed], ['Color', p.color], ['Born', p.born],
+      ['Height', p.height], ['Owner', p.owner], ['Location', p.location]
+    ] as [string, string | undefined][]).filter(([, v]) => v)
+  : [];
+const t = d.pedigreeTree;
+const testGroups = d.tests.reduce<{ name?: string; items: typeof d.tests }[]>((acc, x) => {
+  const last = acc[acc.length - 1];
+  if (last && last.name === x.group) last.items.push(x); else acc.push({ name: x.group, items: [x] });
+  return acc;
+}, []);
+const hasBreeding = d.fees.length > 0 || d.standingAt || d.dealers.length > 0 || d.semen.length > 0;
+---
+<Base title={d.name} description={d.tagline} image={d.heroImage ?? d.photo}>
+  <PageHero title={d.name} image={hero} imagePosition={d.heroPosition} imageMobile={d.heroCard} imageMobilePosition={d.heroCardPosition} logoMobile={d.heroLogo} logoOverlay={d.heroLogoOverlay} logoSide={d.heroLogoSide} logoTop={d.heroLogoTop} logoAlt={d.name} />
+
+  {d.stats.length > 0 && (
+    <section class="band">
+      <div class="container">
+        <ul class="stats" style={`--n:${d.stats.length}`}>
+          {d.stats.map((s, i) => (
+            <li class="reveal" style={`--d:${i * 100}ms`}><span class="v">{s.value}</span><span class="l">{s.label}</span></li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  <section class="section">
+    <div class="container">
+      <StallionTabs slug={entry.id} active="info" hasShow={d.showRecord.length > 0} hasSire={d.sireRecord.length > 0} />
+
+      {(t || d.achievements.length > 0) && (
+        <div class="story">
+          {t && (
+            <div class="card card--line reveal">
+              <h3>Pedigree</h3>
+              <div class="tree">
+                <div class="g0">{d.name}</div>
+                <div class="g1 s">{t.sire}</div>
+                <div class="g1 m">{t.dam}</div>
+                {t.sireSire && <div class="g2 s1">{t.sireSire}</div>}
+                {t.sireDam && <div class="g2 s2">{t.sireDam}</div>}
+                {t.damSire && <div class="g2 m1">{t.damSire}</div>}
+                {t.damDam && <div class="g2 m2">{t.damDam}</div>}
+              </div>
+              <p class="plinks">
+                {d.pedigreeLink && <a class="link" href={d.pedigreeLink} target="_blank" rel="noopener">Full pedigree <i class="ar" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg></i></a>}
+                {d.pedigreePdf && <a class="link" href={d.pedigreePdf} target="_blank" rel="noopener">Black type pedigree (PDF) <i class="ar" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg></i></a>}
+              </p>
+            </div>
+          )}
+          {d.achievements.length > 0 && (
+            <div>
+              <h3 class="reveal">Achievements &amp; titles</h3>
+              <ol class="ach">
+                {d.achievements.map((a, i) => (
+                  <li class="reveal" style={`--d:${i * 90}ms`}><span class="ay">{a.year}</span><span>{a.title}</span></li>
+                ))}
+              </ol>
+            </div>
+          )}
+        </div>
+      )}
+
+      {(passport.length > 0 || entry.body) && (
+        <div class="pp">
+          {passport.length > 0 && (
+            <div class="card card--line reveal">
+              <div class="pass__top">
+                <h3>Stallion passport</h3>
+                {d.facebook && (
+                  <a class="fb" href={d.facebook} target="_blank" rel="noopener" aria-label={`${d.name} on Facebook`}>
+                    <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M13.5 21v-7.2h2.4l.4-2.9h-2.8V9.1c0-.8.3-1.4 1.4-1.4h1.5V5.1c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.8v2.1H8v2.9h2.5V21h3z"/></svg>
+                  </a>
+                )}
+              </div>
+              <dl class="pass">
+                {passport.map(([k, v]) => <div><dt>{k}</dt><dd>{v}</dd></div>)}
+              </dl>
+            </div>
+          )}
+          {entry.body && (
+            <div>
+              <p class="eyebrow reveal">The stallion</p>
+              <h2 class="reveal">History</h2>
+              <hr class="rule" />
+              <div class="prose reveal"><Content /></div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {hasBreeding && (
+        <div id="breeding" class="breeding">
+          <p class="eyebrow reveal">Breeding information</p>
+          <h2 class="reveal">Breed to {d.name}</h2>
+          <hr class="rule" />
+          {d.breedingIntro && <p class="lead reveal">{d.breedingIntro}</p>}
+
+          <div class:list={['bgrid', { solo: !leftHas }]}>
+            <div class="bcol">
+              {(d.fees.length > 0 || d.status || d.semen.length > 0) && (
+                <div class="card card--red reveal">
+                  <div class="card__top">
+                    {d.status && <span class="pill">{d.status}</span>}
+                    {d.feesYear && <span class="yr">{d.feesYear} season</span>}
+                  </div>
+                  {d.fees.length > 0 && (
+                    <table class="fees">
+                      <tbody>{d.fees.map((f) => <tr><th scope="row">{f.label}</th><td>{f.value}</td></tr>)}</tbody>
+                    </table>
+                  )}
+                  {d.semen.length > 0 && (
+                    <p class="semen">{d.semen.map((s) => <span>{s}</span>)}</p>
+                  )}
+                  {d.feesNote && <p class="fnote">{d.feesNote}</p>}
+                  <a class="cta" href={inquiry}>Breeding inquiry <i aria-hidden="true">→</i></a>
+                </div>
+              )}
+
+              {d.tests.length > 0 && (
+                <div class="plain reveal">
+                  <h3>Genetic tests</h3>
+                  {testGroups.map((g) => (
+                    <>
+                      {g.name && <h4 class="tests__g">{g.name}</h4>}
+                      <ul class="tests">{g.items.map((x) => <li><span>{x.label}</span><b class:list={{ ok: /^(n\/n|negative)$/i.test(x.value.trim()) }}>{x.value}</b></li>)}</ul>
+                    </>
+                  ))}
+                </div>
+              )}
+
+              {d.subscriptions.length > 0 && (
+                <div class="plain reveal">
+                  <h3>Incentives</h3>
+                  <ul class="inc">{d.subscriptions.map((x) => <li>{x}</li>)}</ul>
+                </div>
+              )}
+            </div>
+
+            <div class="bcol">
+              {d.standingAt && (
+                <div class="card reveal" style="--d:100ms">
+                  <h3>Standing at</h3>
+                  {d.standingAt.logo && <img src={d.standingAt.logo} alt={d.standingAt.name} class="slogo" />}
+                  <p class="sname">{d.standingAt.name}</p>
+                  {d.standingAt.address && <p>{d.standingAt.address}</p>}
+                  {d.standingAt.phone && <p><a href={`tel:${d.standingAt.phone.replace(/[^\d+]/g, '')}`}>{d.standingAt.phone}</a></p>}
+                  {d.standingAt.website && <p><a class="link" href={d.standingAt.website} target="_blank" rel="noopener">Visit website <i class="ar" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg></i></a></p>}
+                </div>
+              )}
+
+              {d.dealers.length > 0 && (
+                <div class="card reveal" style="--d:200ms">
+                  <h3>Frozen semen in Europe</h3>
+                  <ul class="dealers">
+                    {d.dealers.map((x) => (
+                      <li><a href={x.url} target="_blank" rel="noopener"><span>{x.name}</span><i class="ar" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg></i></a></li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {d.offspring.length > 0 && (
+        <div class="off">
+          <p class="eyebrow reveal">Sire</p>
+          <h2 class="reveal">{d.offspringNote ?? 'Featured offspring'}</h2>
+          <hr class="rule" />
+          <ul class="offgrid">
+            {[...d.offspring.filter((o) => o.photo), ...d.offspring.filter((o) => !o.photo)].map((o, i) => (
+              <li class:list={['reveal', { 'has-photo': !!o.photo }]} style={`--d:${(i % 4) * 80}ms`}>
+                {o.photo && <img src={o.photo} alt={o.name} loading="lazy" style={o.focus ? `object-position:${o.focus}` : undefined} />}
+                <div class="offtxt"><strong>{o.name}</strong><span>{o.earnings}</span></div>
+              </li>
+            ))}
+          </ul>
+          {d.offspringLink && <p class="offmore reveal"><a class="link" href={d.offspringLink} target="_blank" rel="noopener">All offspring <i class="ar" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg></i></a></p>}
+        </div>
+      )}
+    </div>
+  </section>
+
+  <MediaSection name={d.name} video={d.video} gallery={d.gallery} />
+</Base>
+<script>
+  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+</script>
+<style>
+  .band { background: radial-gradient(120% 90% at 85% 0%, #d2142f 0%, var(--red) 50%, #8f0b1f 100%); color: #fff; padding: clamp(28px, 5vw, 52px) 0; }
+  .stats { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px 12px; }
+  .stats li { text-align: center; padding: 0 8px; }
+  .stats .v { display: block; font-family: var(--font-display); font-weight: 800; line-height: .95; font-size: clamp(2.2rem, 5.4vw, 3.8rem); }
+  .stats .l { display: block; margin-top: 6px; font-family: var(--font-display); text-transform: uppercase; letter-spacing: .12em; font-size: .95rem; opacity: .92; }
+  @media (min-width: 860px) {
+    .stats { grid-template-columns: repeat(var(--n, 4), 1fr); }
+    .stats li { border-left: 1px solid rgba(255,255,255,.3); }
+    .stats li:first-child { border-left: 0; }
+  }
+
+  .breeding { margin-top: clamp(64px, 9vw, 110px); }
+  .breeding h2 { font-size: clamp(1.9rem, 5vw, 3.6rem); }
+  .lead { font-size: 1.2rem; max-width: 62ch; color: var(--muted); margin: 0 0 36px; }
+  @media (min-width: 900px) { .bgrid.solo { grid-template-columns: minmax(0, 520px); } }
+  .bgrid { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+  @media (min-width: 900px) { .bgrid { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 32px; } }
+  .bcol { display: grid; gap: 24px; }
+  .card { background: var(--paper); border-radius: 24px; padding: clamp(22px, 3vw, 34px); }
+  .card--line { background: #fff; border: 1px solid var(--line); }
+  .card h3 { margin: 0 0 14px; font-size: 1.5rem; color: var(--red); }
+  .card p { margin: 0 0 6px; }
+  .card--red { background: radial-gradient(120% 90% at 85% 0%, #d2142f 0%, var(--red) 55%, #8f0b1f 100%); color: #fff; box-shadow: 0 24px 60px rgba(189,15,38,.3); }
+  .card__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 999px; background: #fff; color: var(--red); font-family: var(--font-display); text-transform: uppercase; letter-spacing: .14em; font-weight: 700; font-size: .95rem; }
+  .pill::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: #1fa24a; }
+  .yr { font-family: var(--font-display); text-transform: uppercase; letter-spacing: .14em; opacity: .92; }
+  .fees { width: 100%; border-collapse: collapse; }
+  .fees th, .fees td { padding: 14px 0; border-top: 1px solid rgba(255,255,255,.3); text-align: left; vertical-align: baseline; }
+  .fees th { font-family: var(--font-display); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; font-size: 1.05rem; padding-right: 16px; }
+  .fees td { text-align: right; font-family: var(--font-display); font-weight: 800; font-size: clamp(1.4rem, 3vw, 1.9rem); line-height: 1.1; }
+  @media (max-width: 560px) { .fees tr { display: block; padding: 12px 0; border-top: 1px solid rgba(255,255,255,.3); } .fees th, .fees td { display: block; border: 0; padding: 0; text-align: left; } .fees td { margin-top: 4px; } }
+  .semen { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0 !important; }
+  .semen span { padding: 5px 14px; border: 1px solid rgba(255,255,255,.7); border-radius: 999px; font-family: var(--font-display); text-transform: uppercase; letter-spacing: .12em; font-size: .9rem; }
+  .fnote { margin: 16px 0 0 !important; font-size: .92rem; opacity: .9; }
+  .cta { display: inline-flex; align-items: center; gap: 10px; margin-top: 22px; padding: 15px 30px; border-radius: 999px; background: #fff; color: var(--red); font-family: var(--font-display); text-transform: uppercase; letter-spacing: .14em; font-weight: 700; text-decoration: none; transition: transform .2s, box-shadow .2s; }
+  .cta:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,.25); }
+  .cta i, .link i { font-style: normal; display: inline-block; transition: transform .25s; }
+  .cta:hover i { transform: translateX(5px); }
+  .plain { margin-top: 14px; }
+  .plain h3 { margin: 0 0 12px; font-size: 1.5rem; color: var(--red); }
+  .inc { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; column-gap: 32px; }
+  @media (min-width: 560px) { .inc { grid-template-columns: 1fr 1fr; } }
+  .inc li { padding: 12px 0; border-top: 1px solid var(--line); font-family: var(--font-display); text-transform: uppercase; letter-spacing: .07em; font-weight: 600; font-size: 1.1rem; line-height: 1.15; }
+  .slogo { max-width: 160px; margin-bottom: 12px; }
+  .sname { font-family: var(--font-display); text-transform: uppercase; letter-spacing: .04em; font-weight: 700; font-size: 1.5rem; }
+  .card a { color: var(--black); }
+  .link { color: var(--red) !important; font-weight: 600; text-decoration: none; }
+  .link:hover { text-decoration: underline; }
+  .dealers { list-style: none; margin: 0; padding: 0; }
+  .dealers li { border-top: 1px solid var(--line); }
+  .dealers li:first-child { border-top: 0; }
+  .dealers a { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; text-decoration: none; font-family: var(--font-display); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; font-size: 1.15rem; }
+  .ar svg { width: 1em; height: 1em; vertical-align: -.12em; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .dealers a i { font-style: normal; color: var(--red); transition: transform .25s; }
+  .dealers a:hover { color: var(--red); }
+  .dealers a:hover i { transform: translate(3px, -3px); }
+
+  .story { margin-top: 8px; display: grid; gap: 40px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+  @media (min-width: 900px) { .story { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 56px; } }
+  .story h2 { font-size: clamp(2rem, 4.4vw, 3.2rem); }
+  .story h3 { margin: 0 0 14px; font-size: 1.5rem; color: var(--red); }
+  .ach { list-style: none; margin: 0; padding: 0; }
+  .ach li { display: grid; grid-template-columns: 72px 1fr; gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); align-items: baseline; }
+  .ach li:last-child { border-bottom: 1px solid var(--line); }
+  .ay { font-family: var(--font-display); font-weight: 800; font-size: 1.6rem; color: var(--red); line-height: 1; }
+
+  .pp { margin-top: clamp(48px, 7vw, 80px); display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+  @media (min-width: 900px) { .pp { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 56px; } }
+  .pass__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .pass__top h3 { margin: 0 !important; }
+  .fb { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; color: var(--red) !important; border: 1.5px solid var(--line); transition: background .2s, color .2s, border-color .2s; }
+  .fb:hover { background: var(--red); color: #fff !important; border-color: var(--red); }
+  .pass { margin: 0; }
+  .pass div { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .pass dt { color: var(--muted); }
+  .pass dd { margin: 0; font-weight: 600; text-align: right; }
+  .tests { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); column-gap: 28px; }
+  .tests li span { white-space: nowrap; }
+  .tests li { display: flex; justify-content: space-between; gap: 8px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .tests__g { margin: 22px 0 0; font-family: var(--font-body); font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .16em; color: var(--muted); }
+  .tests__g + .tests li:first-child, .tests__g + .tests li:nth-child(-n+4) { border-top-color: var(--line); }
+  .tests b { color: var(--ink); text-align: right; }
+  .tests b.ok { color: #1a7f37; }
+  .tree { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr) minmax(0, 1.15fr); grid-template-rows: repeat(4, auto); gap: 8px; align-items: stretch; margin-top: 4px; }
+  .tree > div { display: flex; align-items: center; padding: 10px 14px; border-radius: 12px; background: var(--paper); font-family: var(--font-display); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; line-height: 1.1; }
+  .tree .g0 { grid-column: 1; grid-row: 1 / 5; background: var(--red); color: #fff; font-size: 1.3rem; font-weight: 800; }
+  .tree .g1 { grid-column: 2; font-weight: 700; background: #efefef; overflow-wrap: anywhere; hyphens: auto; }
+  .tree .s { grid-row: 1 / 3; } .tree .m { grid-row: 3 / 5; }
+  .tree .g2 { grid-column: 3; font-size: .95rem; }
+  .tree .s1 { grid-row: 1; } .tree .s2 { grid-row: 2; } .tree .m1 { grid-row: 3; } .tree .m2 { grid-row: 4; }
+  @media (max-width: 560px) {
+    .card { padding: 20px 18px; }
+    .tree { gap: 5px; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr) minmax(0, 1.2fr); }
+    .tree > div { padding: 7px 8px; font-size: .74rem; letter-spacing: .01em; hyphens: none; }
+    .tree .g0 { font-size: .8rem; letter-spacing: 0; padding: 7px 6px; }
+    .tree .g2 { font-size: .6rem; letter-spacing: 0; padding: 7px 6px; }
+    .tests { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .pass div { flex-direction: column; gap: 2px; } .pass dd { text-align: left; }
+  }
+  .plinks { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 18px 0 0 !important; }
+
+  .off { margin-top: clamp(64px, 9vw, 110px); }
+  .off h2 { font-size: clamp(2rem, 4.4vw, 3.2rem); }
+  .offgrid { list-style: none; margin: 36px 0 0; padding: 0; display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+  .offgrid li { display: grid; gap: 2px; padding: 18px 22px; border-radius: 18px; background: var(--paper); transition: transform .25s, box-shadow .25s; }
+  .offgrid li:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(0,0,0,.1); }
+  .offmore { margin: 32px 0 0; }
+  .offgrid li:not(.has-photo) { align-self: start; }
+  .offgrid li.has-photo { padding: 0; overflow: hidden; gap: 0; }
+  .offgrid li.has-photo img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; object-position: center 55%; display: block; }
+  .offgrid li.has-photo .offtxt { padding: 14px 20px 18px; }
+  .offtxt { display: grid; gap: 2px; }
+  .offgrid strong { font-family: var(--font-display); text-transform: uppercase; letter-spacing: .04em; font-size: 1.3rem; }
+  .offgrid span { color: var(--red); font-weight: 700; }
+
+
+  .reveal { opacity: 0; transform: translateY(32px); transition: opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1); transition-delay: var(--d, 0ms); }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+</style>

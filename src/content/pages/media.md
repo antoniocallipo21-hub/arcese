@@ -1,0 +1,29 @@
+---
+title: Media
+gallery:
+  - { image: /images/mares/americasnextgunmodel/1.jpg, caption: Americasnextgunmodel, group: Americasnextgunmodel }
+  - { image: /images/mares/americasnextgunmodel/2.jpg, caption: Americasnextgunmodel, group: Americasnextgunmodel }
+  - { image: /images/mares/americasnextgunmodel/3.jpg, caption: Americasnextgunmodel, group: Americasnextgunmodel }
+  - { image: /images/stallions/belissimo/7.jpg, caption: Belissimo, group: Belissimo }
+  - { image: /images/stallions/belissimo/1.jpg, caption: Belissimo, group: Belissimo }
+  - { image: /images/stallions/belissimo/hero.jpg, caption: Belissimo, group: Belissimo }
+  - { image: /images/stallions/belissimo/8.jpg, caption: Belissimo, group: Belissimo }
+  - { image: /images/stallions/belissimo/4.jpg, caption: Belissimo, group: Belissimo }
+  - { image: /images/stallions/belissimo/5.jpg, caption: Belissimo, group: Belissimo }
+  - { image: /images/stallions/gunnatrashya/hero-grazing.jpg, caption: Gunnatrashya, group: Gunnatrashya }
+  - { image: /images/stallions/gunnatrashya/hero-card.jpg, caption: Gunnatrashya, group: Gunnatrashya }
+  - { image: /images/stallions/gunnatrashya/3.jpg, caption: Gunnatrashya, group: Gunnatrashya }
+  - { image: /images/stallions/gunnatrashya/hero.jpg, caption: Gunnatrashya, group: Gunnatrashya }
+  - { image: /images/stallions/walla-walla-whiz/hero-run.jpg, caption: Walla Walla Whiz, group: Walla Walla Whiz }
+  - { image: /images/stallions/walla-walla-whiz/1.jpg, caption: Walla Walla Whiz, group: Walla Walla Whiz }
+  - { image: /images/stallions/walla-walla-whiz/3.jpg, caption: Walla Walla Whiz, group: Walla Walla Whiz }
+  - { image: /images/stallions/walla-walla-whiz/2.jpg, caption: Walla Walla Whiz, group: Walla Walla Whiz }
+  - { image: /images/stallions/july-joe-snap/hero.jpg, caption: July Joe Snap, group: July Joe Snap }
+  - { image: /images/stallions/july-joe-snap/3.jpg, caption: July Joe Snap, group: July Joe Snap }
+  - { image: /images/stallions/july-joe-snap/2.jpg, caption: July Joe Snap, group: July Joe Snap }
+  - { image: /images/stallions/july-joe-snap/1.jpg, caption: July Joe Snap, group: July Joe Snap }
+  - { image: /images/stallions/july-joe-snap/5.jpg, caption: July Joe Snap, group: July Joe Snap }
+  - { image: /images/mares/lexi/hero.jpg, caption: Wimpys Little Chic, group: Wimpys Little Chic }
+  - { image: /images/mares/lexi/1.jpg, caption: Wimpys Little Chic, group: Wimpys Little Chic }
+  - { image: /images/mares/lexi/2.jpg, caption: Wimpys Little Chic, group: Wimpys Little Chic }
+---

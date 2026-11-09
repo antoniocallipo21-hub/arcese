@@ -1,0 +1,207 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import { getEntry, getCollection } from 'astro:content';
+import { heroFor } from '../lib/heroes';
+const rec = (await getEntry('records', 'records'))!.data;
+const dams = (await getCollection('mares')).filter((m) => m.data.damTitle).sort((a, b) => a.data.order - b.data.order);
+const sires = (await getCollection('stallions')).filter((s) => s.data.sireTitle).sort((a, b) => a.data.order - b.data.order);
+const hero = await heroFor('records');
+
+// Un'unica linea del tempo: i Futurity (lista dedicata) + le altre tappe
+type Item = { year: string; when?: string; tag?: string; title: string; text: string; futurity: boolean; photo?: string; rider?: string };
+const timeline: Item[] = [
+  ...rec.futurity.map((f) => ({ year: f.year, title: f.horse, text: `NRHA Open Futurity Champion, ridden by ${f.rider}.`, futurity: true, photo: f.photo, rider: f.rider })),
+  ...rec.milestones.map((m) => ({ ...m, futurity: false })),
+].sort((a, b) => Number(a.year) - Number(b.year));
+---
+<Base title="Records" image={hero}>
+  <PageHero eyebrow="Arcese Quarter Horses" title="Records" intro="Results that built the Arcese name." image={hero} />
+
+  {rec.honors.length > 0 && (
+    <section class="acc">
+      <div class="container">
+        <ul class="hon">
+          {rec.honors.map((h, i) => (
+            <li class:list={['hon__item', 'reveal', { 'is-hof': h.text.includes('{NRHA}') }]} style={`--d:${i * 120}ms`}>
+              {h.year && !h.text.includes('{NRHA}') && <span class="hon__year">{h.year}</span>}
+              {h.text.includes('{NRHA}') ? (
+                <span class="hon__hof">
+                  <span class="hon__mark">
+                    {h.year && <span class="hon__yr">{h.year}</span>}
+                    <img class="hon__logo" src="/images/nrha-logo.png" alt="NRHA" />
+                  </span>
+                  <span class="hon__serif">
+                    {h.text.replace('{NRHA}', '').trim().split(/\s+of\s+/i).map((part, k, arr) => (
+                      <Fragment>{part}{k < arr.length - 1 && <em> of </em>}</Fragment>
+                    ))}
+                  </span>
+                </span>
+              ) : (
+                <span class="hon__text">{h.text}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  {timeline.length > 0 && (
+    <section class="section tl-wrap">
+      <div class="container">
+        <p class="eyebrow reveal">Since {timeline[0].year}</p>
+        <h2 class="reveal">Timeline</h2>
+        <hr class="rule" />
+        <ol class="tl">
+          {timeline.map((t) => (
+            <li class:list={['tl__item', 'reveal', { 'is-futurity': t.futurity, 'is-owner': t.tag === 'Owner' }]}>
+              <span class="tl__dot" aria-hidden="true"></span>
+              <div class:list={['tl__card', { 'has-photo': t.futurity }]}>
+                {t.futurity && (
+                  <div class="tl__photo">
+                    {t.photo
+                      ? <img src={t.photo} alt={`${t.title} and ${t.rider}, NRHA Open Futurity ${t.year}`} loading="lazy" />
+                      : <img class="tl__ph" src="/images/logo-mark.png" alt="" aria-hidden="true" />}
+                  </div>
+                )}
+                <div class="tl__body">
+                  <span class="tl__year">{t.year}</span>
+                  {t.futurity ? <span class="tl__tag">Futurity</span> : t.tag && <span class="tl__tag tl__tag--o">{t.tag}</span>}
+                  {t.when && <span class="tl__when">{t.when}</span>}
+                  <h3>{t.title}</h3>
+                  <p>{t.text}</p>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  )}
+
+  {sires.length > 0 && (
+    <section class="section section--paper">
+      <div class="container">
+        <p class="eyebrow reveal">Million Dollar</p>
+        <h2 class="reveal">Sires</h2>
+        <hr class="rule" />
+        <div class="sires">
+          {sires.map((s, i) => (
+            <a class="sire reveal" style={`--d:${i * 120}ms`} href={`/stallions/${s.id}/`}>
+              <span class="sv">{s.data.sireTitle}</span>
+              <strong>{s.data.name}</strong>
+              {s.data.lte && <span class="sl">LTE {s.data.lte}</span>}
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  {dams.length > 0 && (
+    <section class="section">
+      <div class="container">
+        <p class="eyebrow reveal">Million Dollar</p>
+        <h2 class="reveal">Dams</h2>
+        <hr class="rule" />
+        <div class="sires dams">
+          {dams.map((m, i) => (
+            <a class="sire reveal" style={`--d:${i * 120}ms`} href={m.data.standalone ?? `/mares/#${m.id}`}>
+              <span class="sv">{m.data.damTitle}</span>
+              <strong>{m.data.name}</strong>
+              {m.data.lte && <span class="sl">LTE {m.data.lte}</span>}
+              {m.data.offspring && <span class="sl">Produce earnings: {m.data.offspring}</span>}
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+</Base>
+<script>
+  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: 0.2 });
+  document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+  // La linea rossa si riempie mentre scorri la timeline
+  const tl = document.querySelector<HTMLElement>('.tl');
+  if (tl) {
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const r = tl.getBoundingClientRect();
+      const p = Math.min(1, Math.max(0, (innerHeight * 0.6 - r.top) / r.height));
+      tl.style.setProperty('--prog', String(p));
+    };
+    addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    update();
+  }
+
+</script>
+<style>
+  .acc { background: radial-gradient(120% 90% at 85% 0%, #d2142f 0%, var(--red) 50%, #8f0b1f 100%); color: #fff; padding: clamp(64px, 9vw, 110px) 0; }
+  .hon { list-style: none; margin: 0 auto; padding: 0; max-width: 980px; }
+  .hon__item { text-align: center; padding: clamp(28px, 5vw, 48px) 8px; border-top: 1px solid rgba(255,255,255,.3); }
+  .hon__item:first-child { border-top: 0; padding-top: 0; }
+  .hon__item:last-child { padding-bottom: 0; }
+  .hon__year { display: block; font-family: var(--font-display); font-weight: 800; line-height: .9; font-size: clamp(4.5rem, 14vw, 9rem); }
+  .hon__text { display: block; font-family: var(--font-display); font-weight: 700; letter-spacing: .05em; line-height: 1.05; font-size: clamp(1.9rem, 5.2vw, 3.4rem); }
+  .hon__year + .hon__text { font-size: clamp(2.2rem, 7vw, 4.6rem); margin-top: .1em; }
+  .hon__hof { display: flex; align-items: center; gap: clamp(12px, 2vw, 22px); flex-wrap: wrap; justify-content: center; }
+  .hon__mark { display: inline-flex; align-items: flex-end; gap: 8px; }
+  .hon__yr { font-family: var(--font-display); font-weight: 300; font-size: clamp(.9rem, 1.5vw, 1.15rem); letter-spacing: .1em; line-height: 1; margin-bottom: 4px; opacity: .95; }
+  .hon__logo { display: block; height: clamp(44px, 7vw, 72px); width: auto; }
+  .hon__serif { display: block; font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 700; letter-spacing: .06em; line-height: 1; font-size: clamp(2rem, 6.5vw, 4rem); }
+  .hon__serif em { font-style: italic; font-weight: 600; letter-spacing: 0; }
+  /* Linea del tempo: linea centrale che si riempie di rosso, schede alternate */
+  .tl { position: relative; list-style: none; margin: 56px 0 0; padding: 0; --prog: 0; }
+  .tl::before { content: ''; position: absolute; top: 0; bottom: 0; left: 14px; width: 2px; background: var(--line); }
+  .tl::after { content: ''; position: absolute; top: 0; left: 14px; width: 2px; height: calc(var(--prog) * 100%); background: var(--red); box-shadow: 0 0 10px rgba(189,15,38,.45); }
+  .tl__item { position: relative; padding: 0 0 36px 52px; }
+  .tl__dot { position: absolute; left: 6px; top: 22px; width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 3px solid var(--red); box-shadow: 0 0 0 5px #fff; }
+  .is-futurity .tl__dot { background: var(--red); }
+  .tl__card { padding: 22px 24px; border-radius: 20px; background: var(--paper); }
+  .is-futurity .tl__card { background: #fff; box-shadow: 0 16px 40px rgba(0,0,0,.09); border-top: 4px solid var(--red); }
+  .tl__year { font-family: var(--font-display); font-weight: 800; font-size: 3rem; line-height: 1; color: var(--red); }
+  .tl__tag { margin-left: 12px; vertical-align: middle; font-family: var(--font-display); text-transform: uppercase; letter-spacing: .14em; font-size: .8rem; padding: 3px 10px; border-radius: 999px; background: var(--red); color: #fff; }
+  /* Soglie da owner: scheda rossa in evidenza */
+  .is-owner .tl__dot { background: var(--red); width: 22px; height: 22px; left: 4px; top: 20px; }
+  .is-owner .tl__card { background: radial-gradient(120% 90% at 85% 0%, #d2142f 0%, var(--red) 50%, #8f0b1f 100%); color: #fff; box-shadow: 0 16px 40px rgba(189,15,38,.3); }
+  .is-owner .tl__year, .is-owner .tl__card h3 { color: #fff; }
+  .is-owner .tl__card p, .is-owner .tl__when { color: rgba(255,255,255,.9); }
+  .is-owner .tl__tag--o { color: #fff; border-color: rgba(255,255,255,.8); }
+  @media (min-width: 900px) { .is-owner .tl__dot { left: auto; right: -11px; } .is-owner:nth-child(even) .tl__dot { right: auto; left: -11px; } }
+  .tl__tag--o { background: transparent; color: var(--red); border: 1px solid var(--red); }
+  .tl__when { display: block; margin-top: 4px; font-family: var(--font-display); text-transform: uppercase; letter-spacing: .16em; font-size: .85rem; color: var(--muted); }
+  .tl__card h3 { margin: 6px 0 4px; font-size: 1.6rem; }
+  .tl__card p { margin: 0; color: var(--muted); }
+  .tl__card.has-photo { display: grid; grid-template-columns: 112px 1fr; gap: 18px; align-items: start; }
+  .tl__body { min-width: 0; }
+  .has-photo .tl__tag { display: block; width: fit-content; margin: 8px 0 0; }
+  .tl__photo { aspect-ratio: 4 / 5; border-radius: 14px; overflow: hidden; background: var(--paper); box-shadow: 0 10px 26px rgba(0,0,0,.14); display: grid; place-items: center; }
+  .tl__photo img { width: 100%; height: 100%; object-fit: cover; }
+  .tl__photo img.tl__ph { width: 46%; height: auto; object-fit: contain; opacity: .14; }
+  @media (min-width: 900px) {
+    .tl::before, .tl::after { left: 50%; margin-left: -1px; }
+    .tl__item { width: 50%; padding: 0 56px 28px 0; }
+    .tl__item:nth-child(even) { margin-left: 50%; margin-top: -72px; padding: 0 0 28px 56px; }
+    .tl__dot { left: auto; right: -9px; }
+    .tl__item:nth-child(even) .tl__dot { right: auto; left: -9px; }
+    .tl__item:nth-child(odd) .tl__card { text-align: right; }
+    .tl__card.has-photo { grid-template-columns: 150px 1fr; gap: 22px; }
+    .tl__item:nth-child(odd) .tl__card.has-photo { grid-template-columns: 1fr 150px; }
+    .tl__item:nth-child(odd) .tl__card.has-photo .tl__photo { order: 2; }
+    .tl__item:nth-child(odd) .has-photo .tl__tag { margin-left: auto; }
+  }
+  .sires { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .dams .sire { background: var(--paper); box-shadow: none; }
+  .dams .sire:hover { box-shadow: 0 24px 50px rgba(0,0,0,.1); }
+  .sire { display: grid; gap: 4px; padding: 28px; background: #fff; border-radius: 24px; text-decoration: none; color: inherit; box-shadow: 0 16px 40px rgba(0,0,0,.08); transition: transform .25s, box-shadow .25s; }
+  .sire:hover { transform: translateY(-4px); box-shadow: 0 24px 50px rgba(0,0,0,.12); }
+  .sv { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: 2.4rem; color: var(--red); line-height: 1; }
+  .sire strong { font-family: var(--font-display); text-transform: uppercase; font-size: 1.6rem; color: var(--black); }
+  .sl { color: var(--muted); }
+  .reveal { opacity: 0; transform: translateY(32px); transition: opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1); transition-delay: var(--d, 0ms); }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+</style>

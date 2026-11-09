@@ -1,0 +1,155 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import MediaSection from '../components/MediaSection.astro';
+import { getCollection, render } from 'astro:content';
+import { heroFor } from '../lib/heroes';
+
+const entry = (await getCollection('mares')).find((m) => m.data.standalone === '/lexi/')!;
+const d = entry.data;
+const { Content } = await render(entry);
+const hero = await heroFor('lexi');
+const t = d.pedigreeTree;
+---
+<Base title="Lexi" description={`Lexi – ${d.name}, ${d.badge ?? ''}`.trim()} image={hero}>
+  <PageHero title={d.name} image={hero} imagePosition="16% 40%" />
+  <section class="section">
+    <div class="container">
+      {([d.years, d.badge].filter(Boolean).length > 0 || d.sire || d.dam) && (
+        <p class="meta">{[d.years, d.badge].filter(Boolean).join(' · ')}</p>
+      )}
+      {d.facts.length > 0 && (
+        <ul class="facts" style={`--n:${d.facts.length}`}>
+          {d.facts.map((f) => <li><span class="fv">{f.value}</span><span class="fl">{f.label}</span></li>)}
+        </ul>
+      )}
+
+      {(t || d.achievements.length > 0) && (
+        <div class="story">
+          {t && (
+            <div class="card card--line reveal">
+              <h3>Pedigree</h3>
+              <div class="tree">
+                <div class="g0">{d.name}</div>
+                <div class="g1 s">{t.sire}</div>
+                <div class="g1 m">{t.dam}</div>
+                {t.sireSire && <div class="g2 s1">{t.sireSire}</div>}
+                {t.sireDam && <div class="g2 s2">{t.sireDam}</div>}
+                {t.damSire && <div class="g2 m1">{t.damSire}</div>}
+                {t.damDam && <div class="g2 m2">{t.damDam}</div>}
+              </div>
+              {d.pedigreeLink && <p class="plinks"><a class="link" href={d.pedigreeLink} target="_blank" rel="noopener">Full pedigree <i class="ar" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg></i></a></p>}
+            </div>
+          )}
+          {d.achievements.length > 0 && (
+            <div>
+              <h3 class="reveal">Achievements &amp; titles</h3>
+              <ol class="ach">
+                {d.achievements.map((a, i) => (
+                  <li class="reveal" style={`--d:${i * 90}ms`}><span class="ay">{a.year}</span><span>{a.title}</span></li>
+                ))}
+              </ol>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div class="prose story2 reveal"><Content /></div>
+      {d.bestOffspring.length > 0 && (
+        <div class="off">
+          <p class="eyebrow reveal">Produce</p>
+          <h2 class="reveal">Best offspring</h2>
+          <hr class="rule" />
+          <ul class="offgrid">
+            {[...d.bestOffspring.filter((o) => o.photo), ...d.bestOffspring.filter((o) => !o.photo)].map((o, i) => (
+              <li class:list={['reveal', { 'has-photo': !!o.photo }]} style={`--d:${(i % 4) * 80}ms`}>
+                {o.photo && <img src={o.photo} alt={o.name} loading="lazy" style={o.focus ? `object-position:${o.focus}` : undefined} />}
+                <div class="offtxt"><strong>{o.name}</strong>{o.sire && <em>by {o.sire}</em>}<span>{o.earnings}</span></div>
+              </li>
+            ))}
+          </ul>
+          {d.offspringLink && <p class="offmore reveal"><a class="link" href={d.offspringLink} target="_blank" rel="noopener">All offspring <i class="ar" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg></i></a></p>}
+        </div>
+      )}
+      {d.memorial && (
+        <figure class="memorial">
+          <figcaption>In memoriam</figcaption>
+          <img src={d.memorial} alt={`In memoriam – ${d.name}${d.years ? ', ' + d.years : ''}`} loading="lazy" />
+        </figure>
+      )}
+    </div>
+  </section>
+
+  <MediaSection name={d.name} video={d.video} gallery={d.gallery} />
+</Base>
+<script>
+  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+</script>
+<style>
+  .off { margin-top: clamp(56px, 8vw, 96px); }
+  .off h2 { font-size: clamp(2rem, 4.4vw, 3.2rem); }
+  .offgrid { list-style: none; margin: 36px 0 0; padding: 0; display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); }
+  .offgrid li { min-width: 0; display: grid; padding: 18px 22px; border-radius: 18px; background: var(--paper); transition: transform .25s, box-shadow .25s; align-self: start; }
+  .offgrid li:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(0,0,0,.1); }
+  .offgrid li.has-photo { padding: 0; overflow: hidden; }
+  .offgrid li.has-photo img { width: 100%; aspect-ratio: 1 / 1; height: auto; object-fit: cover; object-position: center 40%; display: block; }
+  .offgrid li.has-photo .offtxt { padding: 14px 20px 18px; }
+  .offtxt { display: grid; gap: 2px; }
+  .offgrid strong { font-family: var(--font-display); text-transform: uppercase; letter-spacing: .02em; font-size: 1.05rem; overflow-wrap: anywhere; }
+  .offgrid em { font-style: normal; color: var(--muted); font-size: .9rem; }
+  .offgrid span { color: var(--red); font-weight: 700; }
+  @media (max-width: 560px) { .offgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .offgrid li { padding: 14px 14px; } .offgrid li.has-photo { padding: 0; } .offgrid li.has-photo .offtxt { padding: 10px 12px 14px; } .offgrid strong { font-size: .98rem; } .offgrid em { font-size: .8rem; } }
+  .offmore { margin: 32px 0 0; }
+  .link { color: var(--red); font-weight: 600; text-decoration: none; }
+  .link:hover { text-decoration: underline; }
+  .ar svg { width: 1em; height: 1em; vertical-align: -.12em; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .card { background: var(--paper); border-radius: 24px; padding: clamp(22px, 3vw, 34px); }
+  .card--line { background: #fff; border: 1px solid var(--line); }
+  .card h3 { margin: 0 0 14px; font-size: 1.5rem; color: var(--red); }
+  .card p { margin: 0 0 6px; }
+  .card a { color: var(--black); }
+  .link { color: var(--red) !important; font-weight: 600; text-decoration: none; }
+  .link:hover { text-decoration: underline; }
+  .ar svg { width: 1em; height: 1em; vertical-align: -.12em; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .story { margin-top: 8px; display: grid; gap: 40px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+  @media (min-width: 900px) { .story { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 56px; } }
+  .story h2 { font-size: clamp(2rem, 4.4vw, 3.2rem); }
+  .story h3 { margin: 0 0 14px; font-size: 1.5rem; color: var(--red); }
+  .ach { list-style: none; margin: 0; padding: 0; }
+  .ach li { display: grid; grid-template-columns: 72px 1fr; gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); align-items: baseline; }
+  .ach li:last-child { border-bottom: 1px solid var(--line); }
+  .ay { font-family: var(--font-display); font-weight: 800; font-size: 1.6rem; color: var(--red); line-height: 1; }
+
+  .pp { margin-top: clamp(48px, 7vw, 80px); display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+  .tree { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr) minmax(0, 1.15fr); grid-template-rows: repeat(4, auto); gap: 8px; align-items: stretch; margin-top: 4px; }
+  .tree > div { display: flex; align-items: center; padding: 10px 14px; border-radius: 12px; background: var(--paper); font-family: var(--font-display); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; line-height: 1.1; }
+  .tree .g0 { grid-column: 1; grid-row: 1 / 5; background: var(--red); color: #fff; font-size: 1.3rem; font-weight: 800; }
+  .tree .g1 { grid-column: 2; font-weight: 700; background: #efefef; overflow-wrap: anywhere; hyphens: auto; }
+  .tree .s { grid-row: 1 / 3; } .tree .m { grid-row: 3 / 5; }
+  .tree .g2 { grid-column: 3; font-size: .95rem; }
+  .tree .s1 { grid-row: 1; } .tree .s2 { grid-row: 2; } .tree .m1 { grid-row: 3; } .tree .m2 { grid-row: 4; }
+  .plinks { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 18px 0 0 !important; }
+  @media (max-width: 560px) {
+    .card { padding: 20px 18px; }
+    .tree { gap: 5px; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr) minmax(0, 1.2fr); }
+    .tree > div { padding: 7px 8px; font-size: .74rem; letter-spacing: .01em; hyphens: none; }
+    .tree .g0 { font-size: .8rem; letter-spacing: 0; padding: 7px 6px; }
+    .tree .g2 { font-size: .6rem; letter-spacing: 0; padding: 7px 6px; }
+  }
+  .story2 { margin-top: clamp(48px, 7vw, 80px); max-width: 760px; }
+  .story2 :global(p) { font-size: 1.08rem; }
+  .meta { margin: 0 0 28px; font-family: var(--font-display); text-transform: uppercase; letter-spacing: .16em; font-weight: 600; color: var(--red); display: grid; gap: 4px; }
+  .meta span { color: var(--muted); font-size: .9em; letter-spacing: .1em; }
+  .facts { list-style: none; margin: 0 0 56px; padding: 0; display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  @media (max-width: 560px) { .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .facts li { padding: 16px; } .fv { font-size: 1.7rem; } .fl { font-size: .85rem; } }
+  .facts li { padding: 24px; border-radius: 20px; background: var(--paper); border-top: 4px solid var(--red); }
+  .fv { display: block; font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: 2.4rem; line-height: 1; color: var(--black); }
+  .fl { display: block; margin-top: 6px; color: var(--muted); font-size: .95rem; }
+  .memorial { margin: 64px 0 0; }
+  .memorial figcaption { font-family: var(--font-display); text-transform: uppercase; letter-spacing: .2em; color: var(--red); margin-bottom: 16px; }
+  .memorial img { width: 100%; border-radius: 24px; box-shadow: 0 24px 60px rgba(0,0,0,.18); }
+  .story :global(h3) { margin-top: 1.6em; color: var(--red); }
+  .story :global(p) { font-size: 1.08rem; }
+  .back { margin-top: 48px; }
+</style>

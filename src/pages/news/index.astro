@@ -1,0 +1,35 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import { getCollection } from 'astro:content';
+import { heroFor } from '../../lib/heroes';
+const items = (await getCollection('news')).sort((a, b) => +b.data.date - +a.data.date);
+const hero = await heroFor('news');
+const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+---
+<Base title="News" image={hero}>
+  <PageHero eyebrow="Arcese" title="News" intro="Stories and results from the Arcese program." image={hero} />
+  <section class="section">
+    <div class="container">
+      {items.length === 0 && <p>No news yet. Check back soon.</p>}
+      <div class="grid grid--3">
+        {items.map((n) => (
+          <a class="card item" href={`/news/${n.id}/`}>
+            {n.data.image ? <img src={n.data.image} alt="" loading="lazy" style={n.data.imagePosition ? `object-position:${n.data.imagePosition}` : undefined} /> : <div class="placeholder">Arcese</div>}
+            <div class="card__body">
+              <p class="eyebrow">{fmt(n.data.date)}</p>
+              <h3>{n.data.title}</h3>
+              {n.data.summary && <p>{n.data.summary}</p>}
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>
+<style>
+  .item { text-decoration: none; color: inherit; transition: transform .2s, box-shadow .2s; }
+  .item img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; }
+  .item { border-radius: 24px; overflow: hidden; }
+  .item:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(0,0,0,.1); }
+</style>

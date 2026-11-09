@@ -1,0 +1,25 @@
+---
+import Base from '../../../layouts/Base.astro';
+import PageHero from '../../../components/PageHero.astro';
+import StallionTabs from '../../../components/StallionTabs.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const all = await getCollection('stallions');
+  return all.filter((e) => e.data.sireRecord.length > 0).map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+const { entry } = Astro.props;
+const d = entry.data;
+---
+<Base tone="light" title={`${d.name} – Sire Record`}>
+  <PageHero compact eyebrow={d.name} title="Sire Record" />
+  <section class="section">
+    <div class="container">
+      <StallionTabs slug={entry.id} active="sire" hasShow={d.showRecord.length > 0} hasSire={d.sireRecord.length > 0} />
+      <table class="table">
+        <thead><tr><th>Offspring</th><th>Details</th></tr></thead>
+        <tbody>{d.sireRecord.map((r) => <tr><td>{r.name}</td><td>{r.detail}</td></tr>)}</tbody>
+      </table>
+    </div>
+  </section>
+</Base>

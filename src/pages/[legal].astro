@@ -1,0 +1,19 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import { getEntry, render } from 'astro:content';
+
+// TEMPORANEO: finché i testi legali non sono pronti, le due pagine non vengono generate
+// e chi le apre vede la 404. Per riattivarle metti PUBLISH_LEGAL a true.
+export function getStaticPaths() {
+  const PUBLISH_LEGAL = false;
+  if (!PUBLISH_LEGAL) return [];
+  return [{ params: { legal: 'privacy-policy' } }, { params: { legal: 'cookie-policy' } }];
+}
+const entry = (await getEntry('pages', Astro.params.legal ?? 'privacy-policy'))!;
+const { Content } = await render(entry);
+---
+<Base tone="light" title={entry.data.title}>
+  <PageHero compact title={entry.data.title} />
+  <section class="section"><div class="container prose"><Content /></div></section>
+</Base>

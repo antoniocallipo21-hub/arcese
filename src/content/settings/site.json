@@ -1,0 +1,47 @@
+[
+  {
+    "id": "site",
+    "siteName": "Arcese Quarter Horses",
+    "tagline": "Where preparation meets opportunity.",
+    "logo": "/images/logo.png",
+    "heroImage": "/images/hero.jpg",
+    "headlines": [
+      "#1 All-Time Leading Owners of Reining Horses",
+      "Leading Breeders of Reining, Cutting & Cow Horses"
+    ],
+    "features": [],
+    "instagram": "https://www.instagram.com/arceseqh/",
+    "credits": "Photography by Cam Essick. Graphics by Pacific Range Design.",
+    "accolades": {
+      "title": "NRHA Hall of Fame",
+      "items": [
+        {
+          "value": "9M",
+          "label": "Breeder"
+        },
+        {
+          "value": "#1",
+          "label": "NRHA Leading Breeder"
+        },
+        {
+          "value": "#1",
+          "label": "NRHA Leading Owner"
+        },
+        {
+          "value": "7x",
+          "label": "NRHA Open Futurity Champion Owner"
+        }
+      ]
+    },
+    "pageHeroes": {
+      "about": "/images/about/hero.jpg",
+      "stallions": "/images/stallions/hero.jpg",
+      "mares": "/images/hero.jpg",
+      "lexi": "/images/mares/lexi/hero.jpg",
+      "records": "/images/hero.jpg",
+      "news": "/images/hero.jpg",
+      "media": "/images/about/hero.jpg",
+      "contact": "/images/hero.jpg"
+    }
+  }
+]

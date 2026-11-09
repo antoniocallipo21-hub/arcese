@@ -1,0 +1,33 @@
+---
+import Base from '../layouts/Base.astro';
+import { heroFor } from '../lib/heroes';
+const hero = await heroFor('about');
+---
+<Base title="Page not found" description="This page could not be found.">
+  <section class="nf" data-tone="hero">
+    <img src={hero} alt="" />
+    <div class="container nf__in">
+      <p class="nf__code" aria-hidden="true">404</p>
+      <h1>Page not found</h1>
+      <p class="nf__txt">The page you are looking for has moved or no longer exists.</p>
+      <div class="nf__cta">
+        <a class="nf__btn" href="/">Back to home</a>
+        <a class="nf__btn nf__btn--ghost" href="/stallions/">Our stallions</a>
+      </div>
+    </div>
+  </section>
+</Base>
+<style>
+  .nf { position: relative; min-height: 100vh; min-height: 100lvh; display: grid; align-items: center; background: #111; overflow: hidden; }
+  .nf img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .nf::before { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(to bottom, rgba(0,0,0,.55), rgba(0,0,0,.35) 40%, rgba(0,0,0,.8)); }
+  .nf__in { position: relative; z-index: 2; width: 100%; padding-top: 110px; padding-bottom: 110px; }
+  .nf__code { margin: 0; font-family: var(--font-display); font-weight: 800; line-height: .85; font-size: clamp(7rem, 26vw, 20rem); letter-spacing: .02em; color: transparent; -webkit-text-stroke: 2px rgba(255,255,255,.85); }
+  .nf h1 { color: #fff; margin: .1em 0 0; font-size: clamp(2.2rem, 6vw, 4.4rem); }
+  .nf__txt { color: #fff; opacity: .9; font-size: 1.2rem; max-width: 46ch; margin: .8rem 0 0; }
+  .nf__cta { margin-top: 1.8rem; display: flex; flex-wrap: wrap; gap: 12px; }
+  .nf__btn { display: inline-flex; align-items: center; padding: 13px 28px; border-radius: 999px; background: var(--red); border: 2px solid var(--red); color: #fff; font-family: var(--font-display); text-transform: uppercase; letter-spacing: .14em; font-weight: 700; font-size: .95rem; text-decoration: none; transition: transform .2s, box-shadow .2s, background .2s, color .2s; }
+  .nf__btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,.4); }
+  .nf__btn--ghost { background: transparent; border-color: rgba(255,255,255,.85); }
+  .nf__btn--ghost:hover { background: #fff; color: var(--red); }
+</style>

@@ -1,0 +1,107 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import { getEntry, render } from 'astro:content';
+const entry = (await getEntry('about', 'about'))!;
+const d = entry.data;
+const { Content } = await render(entry);
+---
+<Base title={d.title} description={d.bioTitle} image={d.heroImage}>
+  <PageHero eyebrow="Arcese Quarter Horses" title={d.title} image={d.heroImage} />
+
+  <section class="section bio">
+    <div class="container bio__grid">
+      {d.portrait && <img class="bio__photo reveal" src={d.portrait} alt="Eleuterio Arcese" width="734" height="1144" />}
+      <div class="reveal" style="--d:120ms">
+        {d.bioEyebrow && <p class="eyebrow">{d.bioEyebrow}</p>}
+        {d.bioTitle && <h2>{d.bioTitle}</h2>}
+        <hr class="rule" />
+        <p class="lead">{d.bio}</p>
+      </div>
+    </div>
+  </section>
+
+  {d.quote && (
+    <section class="quote">
+      <div class="container reveal">
+        <blockquote>“{d.quote}”</blockquote>
+        {d.signature && <img class="quote__sig" src={d.signature} alt={d.quoteName ?? ''} />}
+        {d.quoteRole && <p class="quote__role">{d.quoteRole}</p>}
+      </div>
+    </section>
+  )}
+
+  {d.milestone && (
+    <section class="section">
+      <div class="container mile">
+        <div class="mile__head reveal">
+          {d.milestoneYear && <p class="mile__year">{d.milestoneYear}</p>}
+          <h2>{d.milestoneTitle}</h2>
+          <hr class="rule" />
+          <p class="lead">{d.milestone}</p>
+        </div>
+        {d.horses.length > 0 && (
+          <ul class="horses">
+            {d.horses.map((h, i) => (
+              <li class="reveal" style={`--d:${i * 120}ms`}>
+                <strong>{h.name}</strong>
+                <span>{h.achievement}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {d.horsesNote && <p class="note reveal">{d.horsesNote}</p>}
+      </div>
+    </section>
+  )}
+
+  <section class="section section--paper" id="moving-forward">
+    <div class="container program">
+      <div class="program__head reveal">
+        <p class="eyebrow">Arcese USA</p>
+        <h2>{d.programTitle}</h2>
+        <hr class="rule" />
+      </div>
+      <div class="program__body">
+        <div class="prose essay reveal"><Content /></div>
+        {d.programImage && <img class="program__img reveal" src={d.programImage} alt="" loading="lazy" />}
+      </div>
+    </div>
+  </section>
+</Base>
+<script>
+  const els = document.querySelectorAll<HTMLElement>('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.15 });
+  els.forEach((el) => io.observe(el));
+</script>
+<style>
+  .lead { font-size: 1.15rem; line-height: 1.75; max-width: 62ch; }
+  .bio__grid { display: grid; gap: 40px; align-items: center; }
+  @media (min-width: 860px) { .bio__grid { grid-template-columns: 380px 1fr; gap: 80px; } }
+  .bio__photo { width: 100%; max-width: 380px; border-radius: 24px; box-shadow: 0 24px 60px rgba(0,0,0,.16); justify-self: center; }
+  .quote { background: radial-gradient(120% 90% at 85% 0%, #d2142f 0%, var(--red) 50%, #8f0b1f 100%); color: #fff; text-align: center; padding: clamp(64px, 10vw, 120px) 0; }
+  .quote blockquote { margin: 0 auto; max-width: 18ch; font-family: var(--font-display); font-weight: 800; text-transform: uppercase; line-height: .98; font-size: clamp(2.6rem, 8vw, 6rem); }
+  .quote__sig { width: min(260px, 60vw); margin: 32px auto 8px; }
+  .quote__role { margin: 0; font-family: var(--font-display); text-transform: uppercase; letter-spacing: .18em; opacity: .9; }
+  .mile { display: grid; gap: 40px; }
+  .mile__year { font-family: var(--font-display); font-weight: 800; font-size: clamp(4rem, 12vw, 9rem); line-height: .9; color: var(--red); margin: 0 0 .1em; }
+  .horses { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+  .horses li { display: grid; gap: 4px; padding: 20px 0; border-top: 1px solid var(--line); }
+  .horses li:last-child { border-bottom: 1px solid var(--line); }
+  .horses strong { font-family: var(--font-display); text-transform: uppercase; font-size: 1.6rem; letter-spacing: .03em; color: var(--black); }
+  .horses span { color: var(--muted); }
+  @media (min-width: 760px) { .horses li { grid-template-columns: 1fr 1.4fr; gap: 32px; align-items: baseline; } }
+  .note { color: var(--muted); max-width: 70ch; }
+  .program { display: grid; gap: 32px; }
+  .program__body { display: grid; gap: 40px; align-items: start; }
+  @media (min-width: 960px) { .program__body { grid-template-columns: 1.4fr 1fr; gap: 72px; } .program__img { position: sticky; top: 110px; } }
+  .essay { max-width: 68ch; }
+  .essay :global(h3) { margin-top: 1.6em; color: var(--red); }
+  .essay :global(p) { font-size: 1.08rem; }
+  .program__img { width: 100%; border-radius: 24px; box-shadow: 0 24px 60px rgba(0,0,0,.14); }
+  .reveal { opacity: 0; transform: translateY(32px); transition: opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1); transition-delay: var(--d, 0ms); }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+</style>

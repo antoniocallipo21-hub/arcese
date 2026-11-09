@@ -1,0 +1,138 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import { getEntry, getCollection } from 'astro:content';
+import { heroFor } from '../lib/heroes';
+const site = (await getEntry('settings', 'site'))!.data;
+const entry = (await getEntry('pages', 'contact'))!;
+const c = entry.data;
+const stallions = (await getCollection('stallions')).sort((a, b) => a.data.order - b.data.order);
+const hero = await heroFor('contact');
+---
+<Base title="Contact" image={hero}>
+  <PageHero eyebrow="Arcese Quarter Horses" title="Contact us" intro={c.intro} image={hero} />
+  <section class="section">
+    <div class="container cgrid">
+      <div class="info">
+        {c.contacts.map((b, i) => (
+          <article class="blk reveal" style={`--d:${i * 120}ms`}>
+            <p class="eyebrow">{b.label}</p>
+            <h2>{b.name}</h2>
+            {b.lines.map((l) => <p class="ln">{l}</p>)}
+            {b.phone && <a class="big" href={`tel:${b.phone.replace(/[^\d+]/g, '')}`}>{b.phone}</a>}
+            {b.email && <a class="mail" href={`mailto:${b.email}`}>{b.email}</a>}
+          </article>
+        ))}
+        {site.instagram && (
+          <article class="blk reveal" style="--d:240ms">
+            <p class="eyebrow">Follow</p>
+            <a class="ig" href={site.instagram} target="_blank" rel="noopener" aria-label="Arcese Quarter Horses on Instagram">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none"/></svg>
+              <span>@arceseqh</span>
+            </a>
+          </article>
+        )}
+      </div>
+
+      <form class="form reveal" id="cform" novalidate data-endpoint={c.formEndpoint ?? ''} data-email={c.formEmail ?? ''}>
+        <p class="eyebrow">Send a message</p>
+        <h2>How can we help?</h2>
+        <div class="row">
+          <label>Name<input name="name" type="text" autocomplete="name" required /></label>
+          <label>Email<input name="email" type="email" autocomplete="email" required /></label>
+        </div>
+        <div class="row">
+          <label><span>Phone <span class="opt">(optional)</span></span><input name="phone" type="tel" autocomplete="tel" /></label>
+          <label>Interested in
+            <select name="topic">
+              <option>General inquiry</option>
+              {stallions.map((s) => <option value={s.data.name}>{s.data.name} – breeding</option>)}
+              <option>Mares</option>
+              <option>Other</option>
+            </select>
+          </label>
+        </div>
+        <label>Message<textarea name="message" rows="6" required></textarea></label>
+        <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <label class="check"><input type="checkbox" name="consent" required /> <span>I agree to the processing of my data to receive a reply, as described in the <a href="/privacy-policy/" target="_blank">Privacy Policy</a>.</span></label>
+        <button class="send" type="submit">Send message</button>
+        <p class="status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+</Base>
+<script>
+  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+  const form = document.querySelector<HTMLFormElement>('#cform');
+  if (form) {
+    const status = form.querySelector<HTMLElement>('.status')!;
+    const btn = form.querySelector<HTMLButtonElement>('.send')!;
+    // ?stallion=Nome preseleziona il cavallo
+    const pre = new URLSearchParams(location.search).get('stallion');
+    const sel = form.querySelector<HTMLSelectElement>('select[name=topic]')!;
+    if (pre) [...sel.options].forEach((o) => { if (o.value.toLowerCase() === pre.toLowerCase()) sel.value = o.value; });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      status.className = 'status';
+      if (!form.checkValidity()) { form.reportValidity(); return; }
+      const data = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
+      if (data._gotcha) return; // bot
+      const endpoint = form.dataset.endpoint;
+      const email = form.dataset.email;
+      if (endpoint) {
+        btn.disabled = true; status.textContent = 'Sending…';
+        try {
+          const r = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(data) });
+          if (!r.ok) throw new Error(String(r.status));
+          form.reset(); status.textContent = 'Thank you. Your message has been sent.'; status.classList.add('ok');
+        } catch {
+          status.textContent = 'Something went wrong. Please try again or email us directly.'; status.classList.add('err');
+        } finally { btn.disabled = false; }
+      } else if (email) {
+        const body = `Name: ${data.name}\nEmail: ${data.email}\nPhone: ${data.phone || '-'}\nInterested in: ${data.topic}\n\n${data.message}`;
+        location.href = `mailto:${email}?subject=${encodeURIComponent('Website inquiry – ' + data.topic)}&body=${encodeURIComponent(body)}`;
+        status.textContent = 'Opening your email app…'; status.classList.add('ok');
+      }
+    });
+  }
+</script>
+<style>
+  .cgrid { display: grid; gap: 56px; grid-template-columns: 1fr; align-items: start; }
+  @media (min-width: 960px) { .cgrid { grid-template-columns: 5fr 7fr; gap: 80px; } }
+  .info { display: grid; gap: 36px; }
+  .blk { padding-bottom: 32px; border-bottom: 1px solid var(--line); }
+  .blk:last-child { border-bottom: 0; }
+  .blk h2 { font-size: clamp(1.8rem, 3vw, 2.4rem); margin: 0 0 .3em; }
+  .ln { margin: 0 0 .15em; color: var(--muted); }
+  .big { display: inline-block; margin-top: 14px; font-family: var(--font-display); font-weight: 800; font-size: clamp(1.8rem, 3.4vw, 2.4rem); color: var(--black); text-decoration: none; }
+  .mail { display: block; margin-top: 4px; color: var(--red); font-weight: 600; text-decoration: none; word-break: break-all; }
+  .big:hover, .mail:hover { text-decoration: underline; }
+  .ig { display: inline-flex; align-items: center; gap: 12px; color: var(--black); text-decoration: none; font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; letter-spacing: .04em; transition: color .2s; }
+  .ig svg { color: var(--red); }
+  .ig:hover { color: var(--red); }
+  .form { background: var(--paper); border-radius: 28px; padding: clamp(24px, 4vw, 48px); display: grid; gap: 18px; }
+  .form h2 { margin: 0 0 6px; font-size: clamp(1.8rem, 3vw, 2.4rem); }
+  .row { display: grid; gap: 18px; grid-template-columns: 1fr; }
+  @media (min-width: 640px) { .row { grid-template-columns: 1fr 1fr; } }
+  label { display: grid; gap: 6px; font-family: var(--font-display); text-transform: uppercase; letter-spacing: .1em; font-size: .9rem; color: var(--black); }
+  .opt { text-transform: none; letter-spacing: 0; color: var(--muted); font-family: var(--font-body, inherit); }
+  input[type=text], input[type=email], input[type=tel], select, textarea { font: inherit; font-size: 1rem; letter-spacing: 0; text-transform: none; padding: 14px 16px; border: 1px solid #d9d9d9; border-radius: 14px; background: #fff; color: var(--black); width: 100%; box-sizing: border-box; }
+  textarea { resize: vertical; min-height: 140px; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--red); outline-offset: 1px; border-color: var(--red); }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+  .check { display: flex; gap: 12px; align-items: flex-start; text-transform: none; letter-spacing: 0; font-family: inherit; font-size: .92rem; color: var(--muted); }
+  .check input { margin-top: 4px; accent-color: var(--red); width: 18px; height: 18px; flex: none; }
+  .check a { color: var(--red); }
+  .send { justify-self: start; padding: 16px 34px; border: 0; border-radius: 999px; background: var(--red); color: #fff; font-family: var(--font-display); text-transform: uppercase; letter-spacing: .14em; font-weight: 700; font-size: 1rem; cursor: pointer; transition: background .2s, transform .2s; }
+  .send:hover { background: #a00d20; transform: translateY(-2px); }
+  .send:disabled { opacity: .6; cursor: wait; transform: none; }
+  .status { margin: 0; min-height: 1.4em; color: var(--muted); }
+  .status.ok { color: #1a7f37; }
+  .status.err { color: var(--red); }
+  .reveal { opacity: 0; transform: translateY(32px); transition: opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1); transition-delay: var(--d, 0ms); }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+</style>

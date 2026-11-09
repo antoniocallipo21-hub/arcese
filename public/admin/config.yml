@@ -1,0 +1,400 @@
+# --- Backend: DecapBridge (git-gateway) ---
+# Sostituisci i valori con quelli generati nella dashboard di DecapBridge
+# (Sites > il tuo sito > "Decap CMS config").
+backend:
+  name: git-gateway
+  repo: TUO-UTENTE-GITHUB/arcese          # <-- repo GitHub
+  branch: main
+  base_url: https://auth.decapbridge.com/sites/SITE_ID   # <-- da DecapBridge
+  auth_endpoint: /api/auth                                # <-- da DecapBridge
+  gateway_url: https://gateway.decapbridge.com            # <-- da DecapBridge
+
+site_url: https://arcesequarterhorses.com
+media_folder: public/images/uploads
+public_folder: /images/uploads
+locale: en
+
+collections:
+  - name: settings
+    label: Site Settings
+    files:
+      - name: site
+        label: General (home, contacts, footer)
+        file: src/content/settings/site.json
+        fields:
+          - label: Site
+            name: site-list
+            widget: list
+            allow_add: false
+            max: 1
+            fields:
+              - { label: ID, name: id, widget: hidden, default: site }
+              - { label: Site name, name: siteName, widget: string }
+              - { label: Tagline (hero), name: tagline, widget: string }
+              - { label: Logo, name: logo, widget: image, required: false }
+              - { label: Hero image, name: heroImage, widget: image, required: false }
+              - { label: Headlines, name: headlines, widget: list, field: { label: Headline, name: h, widget: string } }
+              - label: Home feature cards
+                name: features
+                widget: list
+                fields:
+                  - { label: Title, name: title, widget: string }
+                  - { label: Subtitle, name: subtitle, widget: string, required: false }
+                  - { label: Image, name: image, widget: image, required: false }
+                  - { label: Link, name: link, widget: string, required: false }
+              - label: Page hero images (full screen)
+                name: pageHeroes
+                widget: object
+                required: false
+                fields:
+                  - { label: About, name: about, widget: image, required: false }
+                  - { label: Stallions, name: stallions, widget: image, required: false }
+                  - { label: Mares, name: mares, widget: image, required: false }
+                  - { label: Lexi, name: lexi, widget: image, required: false }
+                  - { label: Records, name: records, widget: image, required: false }
+                  - { label: News, name: news, widget: image, required: false }
+                  - { label: Media, name: media, widget: image, required: false }
+                  - { label: Contact, name: contact, widget: image, required: false }
+              - label: Accolades (red section on home)
+                name: accolades
+                widget: object
+                required: false
+                fields:
+                  - { label: Title, name: title, widget: string }
+                  - label: Items
+                    name: items
+                    widget: list
+                    fields:
+                      - { label: Value (e.g. 9M, "#1"), name: value, widget: string }
+                      - { label: Label, name: label, widget: string }
+              - { label: Email, name: email, widget: string, required: false }
+              - { label: Phone, name: phone, widget: string, required: false }
+              - { label: Address, name: address, widget: string, required: false }
+              - { label: Instagram URL, name: instagram, widget: string, required: false }
+              - { label: Footer credits, name: credits, widget: string }
+
+  - name: about
+    label: About page
+    files:
+      - name: about
+        label: About
+        file: src/content/about/about.md
+        fields:
+          - { label: Title, name: title, widget: string }
+          - { label: Hero image (wide), name: heroImage, widget: image, required: false }
+          - { label: Biography eyebrow, name: bioEyebrow, widget: string, required: false }
+          - { label: Biography title, name: bioTitle, widget: string, required: false }
+          - { label: Portrait, name: portrait, widget: image, required: false }
+          - { label: Biography text, name: bio, widget: text }
+          - { label: Short text for the home preview, name: preview, widget: text, required: false }
+          - { label: Quote, name: quote, widget: string, required: false }
+          - { label: Quote author, name: quoteName, widget: string, required: false }
+          - { label: Quote author role, name: quoteRole, widget: string, required: false }
+          - { label: Signature (white PNG, transparent), name: signature, widget: image, required: false }
+          - { label: Milestone year, name: milestoneYear, widget: string, required: false }
+          - { label: Milestone title, name: milestoneTitle, widget: string, required: false }
+          - { label: Milestone text, name: milestone, widget: text, required: false }
+          - label: Horses
+            name: horses
+            widget: list
+            required: false
+            fields:
+              - { label: Name, name: name, widget: string }
+              - { label: Achievement, name: achievement, widget: string }
+          - { label: Other horses note, name: horsesNote, widget: text, required: false }
+          - { label: Program section title, name: programTitle, widget: string, required: false }
+          - { label: Program image, name: programImage, widget: image, required: false }
+          - { label: Program text, name: body, widget: markdown }
+
+  - name: records
+    label: Records page
+    files:
+      - name: records
+        label: Records
+        file: src/content/records/records.md
+        fields:
+          - { label: Title, name: title, widget: string }
+          - label: "Honors (red section at the top; write {NRHA} to insert the NRHA logo)"
+            name: honors
+            widget: list
+            required: false
+            fields:
+              - { label: "Year (optional)", name: year, widget: string, required: false }
+              - { label: Text, name: text, widget: string }
+          - label: NRHA Open Futurity Champions
+            name: futurity
+            widget: list
+            fields:
+              - { label: Year, name: year, widget: string }
+              - { label: Horse, name: horse, widget: string }
+              - { label: Rider, name: rider, widget: string }
+              - { label: Photo (4:5 works best), name: photo, widget: image, required: false }
+          - label: Other milestones (merged into the timeline)
+            name: milestones
+            widget: list
+            required: false
+            fields:
+              - { label: Year, name: year, widget: string }
+              - { label: "Month / date (optional, e.g. November 2021)", name: when, widget: string, required: false }
+              - { label: "Tag (optional, e.g. Sire, Dam, Owner, Hall of Fame)", name: tag, widget: string, required: false }
+              - { label: Title, name: title, widget: string }
+              - { label: Text, name: text, widget: text }
+
+  - name: stallions
+    label: Stallions
+    folder: src/content/stallions
+    create: true
+    extension: md
+    format: frontmatter
+    slug: "{{slug}}"
+    summary: "{{name}}"
+    fields:
+      - { label: Name, name: name, widget: string }
+      - { label: Menu order, name: order, widget: number, value_type: int, default: 10 }
+      - { label: Badge (e.g. 19M Sire), name: badge, widget: string, required: false }
+      - { label: Tagline, name: tagline, widget: string, required: false }
+      - { label: Description (e.g. 2006 Sorrel Stallion), name: description, widget: string, required: false }
+      - { label: Sire, name: sire, widget: string, required: false }
+      - { label: Dam, name: dam, widget: string, required: false }
+      - { label: Photo, name: photo, widget: image, required: false }
+      - { label: Home graphic (4:5, e.g. 1080x1350), name: graphic, widget: image, required: false }
+      - { label: Stallions page photo (vertical, horse head), name: cardPhoto, widget: image, required: false }
+      - { label: "Photo focus point (e.g. 30% 40%)", name: cardFocus, widget: string, required: false }
+      - { label: LTE (lifetime earnings), name: lte, widget: string, required: false }
+      - { label: "Card: pedigree line (e.g. Sire × Dam)", name: cardPedigree, widget: string, required: false }
+      - { label: "Card: sire title (e.g. $21M Dollar Sire)", name: sireTitle, widget: string, required: false }
+      - { label: "Card: honor (e.g. NRHA Hall of Fame)", name: honor, widget: string, required: false }
+      - { label: Logo, name: logo, widget: image, required: false }
+      - { label: "Page hero image (wide, 16:9)", name: heroImage, widget: image, required: false }
+      - { label: Mobile hero photo (portrait, shown on phones), name: heroCard, widget: image, required: false }
+      - { label: Mobile hero focus (e.g. 85% 40%), name: heroCardPosition, widget: string, required: false }
+      - { label: Logo shown on the mobile hero (transparent PNG), name: heroLogo, widget: image, required: false }
+      - { label: Logo over the hero photo (all screens, top left), name: heroLogoOverlay, widget: image, required: false }
+      - { label: Logo side on desktop, name: heroLogoSide, widget: select, options: [left, right], default: left, required: false }
+      - { label: Logo vertical position on desktop (e.g. 48vh), name: heroLogoTop, widget: string, required: false }
+      - { label: "Hero focus point (e.g. 70% 50%)", name: heroPosition, widget: string, required: false }
+      - label: Key figures (red strip under the hero)
+        name: stats
+        widget: list
+        required: false
+        fields:
+          - { label: Value, name: value, widget: string }
+          - { label: Label, name: label, widget: string }
+      - { label: "Breeding: status (e.g. Standing)", name: status, widget: string, required: false }
+      - { label: "Breeding: semen types", name: semen, widget: list, required: false, field: { label: Type, name: type, widget: string } }
+      - { label: "Breeding: intro text", name: breedingIntro, widget: text, required: false }
+      - label: "Frozen semen dealers (Europe)"
+        name: dealers
+        widget: list
+        required: false
+        fields:
+          - { label: Name, name: name, widget: string }
+          - { label: Link, name: url, widget: string }
+      - label: Passport
+        name: passport
+        widget: object
+        required: false
+        fields:
+          - { label: Full name, name: fullName, widget: string, required: false }
+          - { label: Breed, name: breed, widget: string, required: false }
+          - { label: Color, name: color, widget: string, required: false }
+          - { label: Born, name: born, widget: string, required: false }
+          - { label: Height, name: height, widget: string, required: false }
+          - { label: Owner, name: owner, widget: string, required: false }
+          - { label: Location, name: location, widget: string, required: false }
+      - label: Achievements & titles
+        name: achievements
+        widget: list
+        required: false
+        fields:
+          - { label: Year, name: year, widget: string }
+          - { label: Title, name: title, widget: string }
+      - label: Pedigree (3 generations)
+        name: pedigreeTree
+        widget: object
+        required: false
+        fields:
+          - { label: Sire, name: sire, widget: string }
+          - { label: Sire's sire, name: sireSire, widget: string, required: false }
+          - { label: Sire's dam, name: sireDam, widget: string, required: false }
+          - { label: Dam, name: dam, widget: string }
+          - { label: Dam's sire, name: damSire, widget: string, required: false }
+          - { label: Dam's dam, name: damDam, widget: string, required: false }
+      - { label: Facebook page (icon in the passport), name: facebook, widget: string, required: false }
+      - { label: Full pedigree link, name: pedigreeLink, widget: string, required: false }
+      - label: Featured offspring
+        name: offspring
+        widget: list
+        required: false
+        fields:
+          - { label: Name, name: name, widget: string }
+          - { label: Earnings (e.g. $879,000+), name: earnings, widget: string }
+          - { label: Photo (optional), name: photo, widget: image, required: false }
+          - { label: Photo focus (optional, e.g. 30% 50%), name: focus, widget: string, required: false }
+      - { label: Link to all offspring (AllBreedPedigree), name: offspringLink, widget: string, required: false }
+      - { label: Offspring note (e.g. Sire record), name: offspringNote, widget: string, required: false }
+      - { label: Photo gallery, name: gallery, widget: list, required: false, field: { label: Photo, name: photo, widget: image } }
+      - { label: "YouTube video ID (e.g. rXexTfa_I8I)", name: video, widget: string, required: false }
+      - label: Genetic tests
+        name: tests
+        widget: list
+        required: false
+        fields:
+          - { label: Test, name: label, widget: string }
+          - { label: Result, name: value, widget: string }
+          - { label: Group (optional, e.g. Health panel, White pattern panel, Color panel), name: group, widget: string, required: false }
+      - { label: Pedigree PDF, name: pedigreePdf, widget: file, required: false }
+      - { label: Fees year, name: feesYear, widget: string, required: false }
+      - label: Breeding fees
+        name: fees
+        widget: list
+        required: false
+        fields:
+          - { label: Type, name: label, widget: string }
+          - { label: Price, name: value, widget: string }
+      - { label: Fees note, name: feesNote, widget: string, required: false }
+      - { label: Subscriptions, name: subscriptions, widget: list, required: false, field: { label: Subscription, name: s, widget: string } }
+      - label: Standing at
+        name: standingAt
+        widget: object
+        required: false
+        fields:
+          - { label: Name, name: name, widget: string }
+          - { label: Address, name: address, widget: string, required: false }
+          - { label: Phone, name: phone, widget: string, required: false }
+          - { label: Website, name: website, widget: string, required: false }
+          - { label: Logo, name: logo, widget: image, required: false }
+      - label: Show record
+        name: showRecord
+        widget: list
+        required: false
+        fields:
+          - { label: Year, name: year, widget: string }
+          - { label: Event, name: event, widget: string }
+          - { label: Result, name: result, widget: string }
+      - label: Sire record
+        name: sireRecord
+        widget: list
+        required: false
+        fields:
+          - { label: Offspring, name: name, widget: string }
+          - { label: Details, name: detail, widget: string, required: false }
+      - { label: Extra text, name: body, widget: markdown, required: false }
+
+  - name: news
+    label: News
+    folder: src/content/news
+    create: true
+    extension: md
+    format: frontmatter
+    slug: "{{slug}}"
+    summary: "{{title}} ({{date}})"
+    sortable_fields: [date, title]
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: Date, name: date, widget: datetime, date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+      - { label: Image (cover and page hero), name: image, widget: image, required: false }
+      - { label: "Image focus (e.g. 50% 40%)", name: imagePosition, widget: string, required: false }
+      - { label: Summary, name: summary, widget: text, required: false }
+      - { label: Body, name: body, widget: markdown }
+
+  - name: mares
+    label: Our Mares
+    folder: src/content/mares
+    create: true
+    extension: md
+    format: frontmatter
+    summary: "{{name}}"
+    fields:
+      - { label: Name, name: name, widget: string }
+      - { label: Order, name: order, widget: number, value_type: int, default: 10 }
+      - { label: Badge (e.g. NRHA Million Dollar Dam), name: badge, widget: string, required: false }
+      - { label: Sire, name: sire, widget: string, required: false }
+      - { label: Dam, name: dam, widget: string, required: false }
+      - { label: Photo (also used as page hero), name: photo, widget: image, required: false }
+      - { label: "Years (e.g. 2004 – 2023)", name: years, widget: string, required: false }
+      - { label: "Records page: dam title (e.g. Million Dollar Dam)", name: damTitle, widget: string, required: false }
+      - { label: LTE (lifetime earnings), name: lte, widget: string, required: false }
+      - { label: "Offspring earnings (e.g. $1,964,258 in offspring earnings)", name: offspring, widget: string, required: false }
+      - { label: Year born and color (e.g. 2009 · Sorrel), name: profile, widget: string, required: false }
+      - { label: Black type pedigree (PDF), name: pedigreePdf, widget: file, required: false }
+      - { label: Photo focus (e.g. 50% 30%), name: photoFocus, widget: string, required: false }
+      - { label: In memoriam image, name: memorial, widget: image, required: false }
+      - label: Achievements & titles
+        name: achievements
+        widget: list
+        required: false
+        fields:
+          - { label: Year, name: year, widget: string }
+          - { label: Title, name: title, widget: string }
+      - label: Pedigree
+        name: pedigreeTree
+        widget: object
+        required: false
+        fields:
+          - { label: Sire, name: sire, widget: string }
+          - { label: Sire's sire, name: sireSire, widget: string, required: false }
+          - { label: Sire's dam, name: sireDam, widget: string, required: false }
+          - { label: Dam, name: dam, widget: string }
+          - { label: Dam's sire, name: damSire, widget: string, required: false }
+          - { label: Dam's dam, name: damDam, widget: string, required: false }
+      - { label: Full pedigree link, name: pedigreeLink, widget: string, required: false }
+      - { label: Video (YouTube ID), name: video, widget: string, required: false }
+      - { label: Photo gallery, name: gallery, widget: list, required: false, field: { label: Photo, name: photo, widget: image } }
+      - label: Best offspring
+        name: bestOffspring
+        widget: list
+        required: false
+        fields:
+          - { label: Name, name: name, widget: string }
+          - { label: Sire, name: sire, widget: string, required: false }
+          - { label: Earnings (e.g. $506,091+), name: earnings, widget: string }
+          - { label: Photo (optional), name: photo, widget: image, required: false }
+          - { label: Photo focus (optional, e.g. 30% 50%), name: focus, widget: string, required: false }
+      - { label: Link to all offspring, name: offspringLink, widget: string, required: false }
+      - { label: "Dedicated page URL (e.g. /lexi/ — takes her out of the Mares list)", name: standalone, widget: string, required: false }
+      - label: Key facts
+        name: facts
+        widget: list
+        required: false
+        fields:
+          - { label: Value, name: value, widget: string }
+          - { label: Label, name: label, widget: string }
+      - { label: Story, name: body, widget: markdown, required: false }
+
+  - name: pages
+    label: Pages
+    folder: src/content/pages
+    create: false
+    extension: md
+    format: frontmatter
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: Intro, name: intro, widget: string, required: false }
+      - label: Gallery (Media page)
+        name: gallery
+        widget: list
+        required: false
+        fields:
+          - { label: Image, name: image, widget: image }
+          - { label: Caption, name: caption, widget: string, required: false }
+      - label: Links (Media page)
+        name: links
+        widget: list
+        required: false
+        fields:
+          - { label: Label, name: label, widget: string }
+          - { label: URL, name: url, widget: string }
+      - label: Contact blocks (Contact page)
+        name: contacts
+        widget: list
+        required: false
+        fields:
+          - { label: "Label (e.g. Breeding)", name: label, widget: string }
+          - { label: Name, name: name, widget: string }
+          - { label: Address / extra lines, name: lines, widget: list, required: false, field: { label: Line, name: line, widget: string } }
+          - { label: Phone, name: phone, widget: string, required: false }
+          - { label: Email, name: email, widget: string, required: false }
+      - { label: "Form endpoint (e.g. https://formspree.io/f/xxxx)", name: formEndpoint, widget: string, required: false }
+      - { label: "Fallback email (used if no endpoint is set)", name: formEmail, widget: string, required: false }
+      - { label: Body, name: body, widget: markdown, required: false }

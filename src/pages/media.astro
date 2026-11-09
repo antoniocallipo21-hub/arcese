@@ -1,0 +1,91 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import { getEntry, render } from 'astro:content';
+import { heroFor } from '../lib/heroes';
+const entry = (await getEntry('pages', 'media'))!;
+const { Content } = await render(entry);
+const hero = await heroFor('media');
+const gallery = entry.data.gallery;
+---
+<Base title={entry.data.title}>
+  <PageHero title={entry.data.title} image={hero} />
+  <section class="section">
+    <div class="container">
+      {entry.body && <div class="prose"><Content /></div>}
+      {gallery.length > 0 && (
+        <ul class="mg">
+          {gallery.map((g, i) => (
+            <li>
+              <button type="button" data-src={g.image} data-cap={g.caption ?? ''} aria-label={`Open photo: ${g.caption ?? i + 1}`}>
+                <img src={g.image} alt={g.caption ?? ''} loading={i < 6 ? 'eager' : 'lazy'} />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {entry.data.links.length > 0 && (
+        <ul class="links">
+          {entry.data.links.map((l) => <li><a href={l.url} target="_blank" rel="noopener">{l.label}</a></li>)}
+        </ul>
+      )}
+    </div>
+  </section>
+  <dialog class="lb" id="lb" aria-label="Photo viewer">
+    <button class="lb__x" type="button" aria-label="Close">×</button>
+    <button class="lb__nav lb__nav--prev" type="button" aria-label="Previous photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg></button>
+    <button class="lb__nav lb__nav--next" type="button" aria-label="Next photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg></button>
+    <img alt="" />
+    <p class="lb__n" aria-live="polite"></p>
+  </dialog>
+</Base>
+<script>
+  const items = [...document.querySelectorAll<HTMLLIElement>('.mg li')];
+
+  const lb = document.querySelector<HTMLDialogElement>('#lb');
+  const img = lb?.querySelector('img');
+  const count = lb?.querySelector('.lb__n');
+  let cur = 0;
+  const visible = () => items.filter((li) => !li.hidden).map((li) => li.querySelector('button')!);
+  const show = (list: HTMLButtonElement[], i: number) => {
+    if (!img || !list.length) return;
+    cur = (i + list.length) % list.length;
+    img.src = list[cur].dataset.src!; img.alt = list[cur].dataset.cap ?? '';
+    if (count) count.textContent = `${cur + 1} / ${list.length}`;
+  };
+  items.forEach((li) => li.querySelector('button')!.addEventListener('click', (e) => {
+    const list = visible(); show(list, list.indexOf(e.currentTarget as HTMLButtonElement)); lb?.showModal();
+  }));
+  lb?.querySelector('.lb__nav--prev')?.addEventListener('click', (e) => { e.stopPropagation(); show(visible(), cur - 1); });
+  lb?.querySelector('.lb__nav--next')?.addEventListener('click', (e) => { e.stopPropagation(); show(visible(), cur + 1); });
+  lb?.addEventListener('click', () => lb.close());
+  lb?.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') show(visible(), cur - 1); if (e.key === 'ArrowRight') show(visible(), cur + 1); });
+  let x0 = 0, suppress = false;
+  lb?.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+  lb?.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 50) { show(visible(), cur + (dx < 0 ? 1 : -1)); suppress = true; setTimeout(() => (suppress = false), 300); }
+  });
+  lb?.addEventListener('click', (e) => { if (suppress) e.stopImmediatePropagation(); }, true);
+</script>
+<style>
+  .mg { list-style: none; margin: 0; padding: 0; columns: 1; column-gap: 14px; }
+  @media (min-width: 560px) { .mg { columns: 2; } }
+  @media (min-width: 960px) { .mg { columns: 3; } }
+  .mg li { break-inside: avoid; margin: 0 0 14px; }
+  .mg button { display: block; width: 100%; padding: 0; border: 0; background: #111; border-radius: 16px; overflow: hidden; cursor: zoom-in; }
+  .mg img { display: block; width: 100%; height: auto; transition: transform .8s cubic-bezier(.2,.7,.2,1); }
+  .mg button:hover img { transform: scale(1.04); }
+  .links { margin-top: 32px; }
+  .lb { border: 0; padding: 0; background: transparent; max-width: 96vw; max-height: 96vh; overflow: visible; }
+  .lb::backdrop { background: rgba(0,0,0,.88); }
+  .lb img { display: block; max-width: 96vw; max-height: 86vh; border-radius: 12px; }
+  .lb__nav { position: fixed; top: 50%; transform: translateY(-50%); width: 52px; height: 52px; border-radius: 50%; border: 0; background: rgba(255,255,255,.92); color: var(--red); cursor: pointer; display: grid; place-items: center; box-shadow: 0 6px 20px rgba(0,0,0,.4); transition: background .2s, color .2s; }
+  .lb__nav svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .lb__nav:hover { background: var(--red); color: #fff; }
+  .lb__nav--prev { left: 14px; } .lb__nav--next { right: 14px; }
+  @media (max-width: 560px) { .lb__nav { width: 42px; height: 42px; top: auto; bottom: 22px; transform: none; } .lb__nav--prev { left: calc(50% - 96px); } .lb__nav--next { right: calc(50% - 96px); } }
+  .lb__n { position: fixed; left: 0; right: 0; bottom: 30px; margin: 0; text-align: center; color: #fff; font-family: var(--font-display); letter-spacing: .14em; font-size: .95rem; pointer-events: none; }
+  @media (min-width: 561px) { .lb__n { bottom: 18px; } }
+  .lb__x { position: absolute; right: 8px; top: 8px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(0,0,0,.55); color: #fff; font-size: 1.8rem; line-height: 1; cursor: pointer; }
+</style>
