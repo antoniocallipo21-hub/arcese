@@ -1,15 +1,33 @@
-# --- Backend: DecapBridge (git-gateway) ---
-# Sostituisci i valori con quelli generati nella dashboard di DecapBridge
-# (Sites > il tuo sito > "Decap CMS config").
+# --- Backend: DecapBridge (git-gateway, PKCE) ---
 backend:
   name: git-gateway
-  repo: TUO-UTENTE-GITHUB/arcese          # <-- repo GitHub
+  repo: antoniocallipo21-hub/arcese
   branch: main
-  base_url: https://auth.decapbridge.com/sites/SITE_ID   # <-- da DecapBridge
-  auth_endpoint: /api/auth                                # <-- da DecapBridge
-  gateway_url: https://gateway.decapbridge.com            # <-- da DecapBridge
+  auth_type: pkce
+  base_url: https://auth.decapbridge.com
+  auth_endpoint: /sites/cc04d559-dd2b-4ccf-8619-97ad66721128/pkce
+  auth_token_endpoint: /sites/cc04d559-dd2b-4ccf-8619-97ad66721128/token
+  gateway_url: https://gateway.decapbridge.com
 
-site_url: https://arcesequarterhorses.com
+  # Chi ha fatto cosa, nei commit
+  commit_messages:
+    create: Create {{collection}} “{{slug}}” - {{author-name}} <{{author-login}}> via DecapBridge
+    update: Update {{collection}} “{{slug}}” - {{author-name}} <{{author-login}}> via DecapBridge
+    delete: Delete {{collection}} “{{slug}}” - {{author-name}} <{{author-login}}> via DecapBridge
+    uploadMedia: Upload “{{path}}” - {{author-name}} <{{author-login}}> via DecapBridge
+    deleteMedia: Delete “{{path}}” - {{author-name}} <{{author-login}}> via DecapBridge
+    openAuthoring: Message {{message}} - {{author-name}} <{{author-login}}> via DecapBridge
+
+auth:
+  email_claim: email
+  first_name_claim: first_name
+  last_name_claim: last_name
+  avatar_url_claim: avatar_url
+
+logo_url: https://decapbridge.com/decapcms-with-bridge.svg
+
+# Quando il dominio definitivo è collegato: https://arcesequarterhorses.com
+site_url: https://arcese.vercel.app
 media_folder: public/images/uploads
 public_folder: /images/uploads
 locale: en
@@ -65,7 +83,7 @@ collections:
                     name: items
                     widget: list
                     fields:
-                      - { label: Value (e.g. 9M, "#1"), name: value, widget: string }
+                      - { label: 'Value (e.g. 9M, "#1")', name: value, widget: string }
                       - { label: Label, name: label, widget: string }
               - { label: Email, name: email, widget: string, required: false }
               - { label: Phone, name: phone, widget: string, required: false }
